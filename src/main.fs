@@ -63,6 +63,27 @@ open Evaluator
 
 // STEP #4: Better error handling
 // ------------------------------
+// The evaluator can fail:
+//  1. If you reference a cell without a value
+//  2. If you reference a cell from within itself
+//
+// To handle errors, we need to modify the `evaluate` function so that
+// it returns `option<int>` rather than just `int`. Go to `evaluator.fs`
+// and modify the function! You will need to propagate the `None` values
+// correctly - the best way to do this is using `Option.bind` and 
+// `Option.map`, but you can also use pattern matching using `match`.
+//
+// Once you modify `evaluate` to return `option<int>`, you will need
+// to modify the code in `renderCell` below. For a start, you can just
+// display `#ERR`, but you can also modify `renderView` to indicate
+// errors with a different background color.
+//
+// Handling the second case is harder, because we currently just get into
+// an infinite loop and get a stack overflow. To handle this, you need
+// to modify the `evaluate` function so that it has an additional parameter
+// of type `Set<Position>` that keeps a set with all cells that we are 
+// evaluating. Then, when handling `Reference`, you need to make sure that
+// the referenced cell is not in this set.
 
 // ----------------------------------------------------------------------------
 // DOMAIN MODEL
@@ -104,7 +125,10 @@ let renderEditor trigger pos value =
   ]
 
 let renderView trigger pos value = 
-  h?td ["onclick" =!> fun _ -> trigger(StartEdit(pos)) ] [ text value ]
+  h?td 
+    [ "style" => "background:white"; 
+      "onclick" =!> fun _ -> trigger(StartEdit(pos)) ] 
+    [ text value ]
 
 let renderCell trigger pos state =
   let value = Map.tryFind pos state.Cells |> Option.defaultValue ""

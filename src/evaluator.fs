@@ -61,7 +61,9 @@ let rec evaluate (cells:Map<Position, string>) expr =
   | Reference pos -> 
       // TODO: We need to evaluate value at `pos`. To do this,
       // get the expression in `cells` at `pos`, parse it and
-      // call `evaluate` recursively to evaluate it.
+      // call `evaluate` recursively to evaluate it. If the
+      // `parse` function returns `None` then start by returning
+      // -1 - we will fix this in the next step.
       // (This is harder than the two above cases!)
       0
 (*

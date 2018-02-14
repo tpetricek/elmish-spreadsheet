@@ -44,20 +44,23 @@ let parse input = run equation input
 // EVALUATOR
 // ----------------------------------------------------------------------------
 
-let rec evaluate (cells:Map<Position, string>) expr = 
+let rec evaluate refs (cells:Map<Position, string>) expr = 
   match expr with
   | Number num -> 
       // TODO: Return the evluated number!
-      1 //Some num
+      Some num
+
   | Binary(l, op, r) -> 
       // TODO: Evaluate left and right recursively and then 
       // add/subtract/etc. them depending on the value of `op`
-      2
-//      let ops = dict ['+', (+); '-', (-); '*', (*); '/', (/)]
-  (*    evaluate cells l |> Option.bind (fun l ->
-        evaluate cells r |> Option.map (fun r ->
+      let ops = dict ['+', (+); '-', (-); '*', (*); '/', (/)]
+      evaluate refs cells l |> Option.bind (fun l ->
+        evaluate refs cells r |> Option.map (fun r ->
           ops.[op] l r))
-*)
+
+  | Reference pos when Set.contains pos refs -> 
+      None
+
   | Reference pos -> 
       // TODO: We need to evaluate value at `pos`. To do this,
       // get the expression in `cells` at `pos`, parse it and
@@ -65,9 +68,6 @@ let rec evaluate (cells:Map<Position, string>) expr =
       // `parse` function returns `None` then start by returning
       // -1 - we will fix this in the next step.
       // (This is harder than the two above cases!)
-      0
-(*
       Map.tryFind pos cells |> Option.bind (fun input ->
         parse input |> Option.bind (fun expr ->
-          evaluate cells expr))
-*)
+          evaluate (Set.add pos refs) cells expr))

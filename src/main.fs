@@ -106,9 +106,9 @@ type State =
 
 let update state = function
   | StartEdit(pos) -> 
-      state //{ state with Active = Some pos }
+      state 
   | FinishEdit ->
-      state //{ state with Active = None }
+      state 
   | UpdateValue(pos, value) ->
       { state with Cells = Map.add pos value state.Cells }
 
@@ -132,17 +132,8 @@ let renderView trigger pos value =
 
 let renderCell trigger pos state =
   let value = Map.tryFind pos state.Cells |> Option.defaultValue ""
-  //match state.Active with 
-  //| Some apos when apos = pos ->
   if pos = ('A', 1) then
     renderEditor trigger pos value
-  //| _ ->
-    (*
-      let value = 
-        evaluate state.Cells (Reference pos) 
-        |> Option.map string
-        |> Option.defaultValue ""
-      *)
   else
     renderView trigger pos value
 
@@ -168,22 +159,6 @@ let renderSheet trigger state =
       ]
     ]
   ]
-(*
-  h?table [] [
-    h?tr [] [
-      yield h?th [] []
-      for col in state.Cols ->
-        h?th [] [ text (string col) ]
-    ]
-    h?tbody [] [
-      for row in state.Rows ->
-        h?tr [] [
-          yield h?th [] [ text (string row) ]
-          for col in state.Cols -> renderCell trigger (col, row) state
-        ]
-    ]
-  ]
-*)
 
 // ----------------------------------------------------------------------------
 // ENTRY POINT
@@ -192,7 +167,6 @@ let renderSheet trigger state =
 let initial = 
   { Cols = ['A' .. 'T']
     Rows = [1 .. 20]
-    //Active = None
     Cells = Map.empty }
 
 app "main" initial renderSheet update

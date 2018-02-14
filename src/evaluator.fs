@@ -48,16 +48,13 @@ let rec evaluate (cells:Map<Position, string>) expr =
   match expr with
   | Number num -> 
       // TODO: Return the evluated number!
-      1 //Some num
+      1 
+
   | Binary(l, op, r) -> 
       // TODO: Evaluate left and right recursively and then 
       // add/subtract/etc. them depending on the value of `op`
       2
-//      let ops = dict ['+', (+); '-', (-); '*', (*); '/', (/)]
-  (*    evaluate cells l |> Option.bind (fun l ->
-        evaluate cells r |> Option.map (fun r ->
-          ops.[op] l r))
-*)
+
   | Reference pos -> 
       // TODO: We need to evaluate value at `pos`. To do this,
       // get the expression in `cells` at `pos`, parse it and
@@ -66,8 +63,3 @@ let rec evaluate (cells:Map<Position, string>) expr =
       // -1 - we will fix this in the next step.
       // (This is harder than the two above cases!)
       0
-(*
-      Map.tryFind pos cells |> Option.bind (fun input ->
-        parse input |> Option.bind (fun expr ->
-          evaluate cells expr))
-*)

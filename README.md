@@ -22,7 +22,7 @@ use [VS Code](https://code.visualstudio.com/) with [Ionide](http://ionide.io/).
 Following the tutorial
 ----------------------
 
-### Step #1: 
+### Step #1:  
 
 // STEP #1: Rendering the grid
 // ---------------------------

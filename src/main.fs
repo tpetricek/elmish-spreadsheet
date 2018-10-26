@@ -35,21 +35,17 @@ let renderEditor trigger pos value =
   td [ Class "selected"] [ 
     input [
       OnInput (fun e -> trigger (UpdateValue(pos, e.target?value)))
-      //OnKeyUp (fun e -> if e.keyCode = 13. then trigger FinishEdit)
       Value value ]
   ]
 
 let renderView trigger pos (value:option<_>) = 
   td 
-    [ Style (if value.IsNone then [Background "#ffb0b0"] else [Background "white"])
-      //OnClick (fun _ -> trigger(StartEdit(pos))) 
-      ] 
+    [ Style (if value.IsNone then [Background "#ffb0b0"] else [Background "white"]) ] 
     [ str (Option.defaultValue "#ERR" value) ]
 
 let renderCell trigger pos state =
-  let value = Map.tryFind pos state.Cells |> Option.defaultValue ""
   if pos = ('A', 1) then
-    renderEditor trigger pos value
+    renderEditor trigger pos "!"
   else
     renderView trigger pos (Some "?")
 

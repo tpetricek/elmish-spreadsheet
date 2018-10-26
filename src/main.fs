@@ -15,11 +15,9 @@ open Evaluator
 
 type Event =
   | UpdateValue of Position * string
-  | StartEdit of Position
 
 type State =
   { Rows : int list
-    Active : Position option
     Cols : char list
     Cells : Map<Position, string> }
 
@@ -28,13 +26,7 @@ type State =
 // ----------------------------------------------------------------------------
 
 let update msg state = 
-  match msg with 
-  | StartEdit(pos) ->
-      { state with Active = Some pos }, Cmd.Empty
-
-  | UpdateValue(pos, value) ->
-      let newCells = Map.add pos value state.Cells
-      { state with Cells = newCells }, Cmd.Empty
+  state, Cmd.Empty
 
 // ----------------------------------------------------------------------------
 // RENDERING
@@ -43,39 +35,37 @@ let update msg state =
 let renderEditor trigger pos value =
   td [ Class "selected"] [ 
     input [
-      OnInput (fun e -> trigger(UpdateValue(pos, e.target?value)))
+      OnInput (fun e -> Browser.window.alert(e.target?value))
       Value value ]
   ]
 
 let renderView trigger pos (value:option<_>) = 
   td 
-    [ Style (if value.IsNone then [Background "#ffb0b0"] else [Background "white"]) 
-      OnClick (fun _ -> trigger(StartEdit(pos)) ) ] 
+    [ Style (if value.IsNone then [Background "#ffb0b0"] else [Background "white"]) ] 
     [ str (Option.defaultValue "#ERR" value) ]
 
 let renderCell trigger pos state =
-  let value = Map.tryFind pos state.Cells 
-  if state.Active = Some pos then
-    renderEditor trigger pos (Option.defaultValue "" value)
+  if pos = ('A', 1) then
+    renderEditor trigger pos "!"
   else
-    let value = 
-      match value with 
-      | Some value -> 
-          parse value |> Option.bind (evaluate Set.empty state.Cells) |> Option.map string
-      | _ -> Some ""
-    renderView trigger pos value
+    renderView trigger pos (Some "?")
 
 let view state trigger =
   let empty = td [] []
   let header h = th [] [str h]
-  let headers = state.Cols |> List.map (fun h -> header (string h))
-  let headers = empty::headers
+  let headers = [ empty; header "A"; header "B" ] 
   
   let row cells = tr [] cells
-  let cells n = 
-    let cells = state.Cols |> List.map (fun h -> renderCell trigger (h, n) state)
-    header (string n) :: cells
-  let rows = state.Rows |> List.map (fun r -> tr [] (cells r))
+  let cells1 = 
+    [ header "1"
+      renderCell trigger ('A', 1) state
+      renderCell trigger ('B', 1) state ]
+  let cells2 = 
+    [ header "2"
+      renderCell trigger ('A', 2) state
+      renderCell trigger ('B', 2) state ]
+  let rows = 
+    [ row cells1; row cells2 ]
 
   table [] [
     tr [] headers
@@ -89,7 +79,6 @@ let view state trigger =
 let initial () = 
   { Cols = ['A' .. 'K']
     Rows = [1 .. 15]
-    Active = None
     Cells = Map.empty },
   Cmd.Empty    
  

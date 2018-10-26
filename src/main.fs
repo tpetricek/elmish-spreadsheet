@@ -1,8 +1,11 @@
 module Spreadsheet
 
-open Fable.Core
-open Fable.Import
 open Elmish
+open Elmish.React
+open Fable.Helpers.React
+open Fable.Helpers.React.Props
+open Fable.Core.JsInterop
+
 open Evaluator
 
 // ----------------------------------------------------------------------------
@@ -104,31 +107,32 @@ type State =
 // EVENT HANDLING
 // ----------------------------------------------------------------------------
 
-let update state = function
+let update msg state = 
+  match msg with 
   | StartEdit(pos) -> 
-      { state with Active = Some pos }
+      { state with Active = Some pos }, Cmd.Empty
   | FinishEdit ->
-      { state with Active = None }
+      { state with Active = None }, Cmd.Empty
   | UpdateValue(pos, value) ->
-      { state with Cells = Map.add pos value state.Cells }
+      { state with Cells = Map.add pos value state.Cells }, Cmd.Empty
 
 // ----------------------------------------------------------------------------
 // RENDERING
 // ----------------------------------------------------------------------------
 
 let renderEditor trigger pos value =
-  h?td ["class" => "selected"] [ 
-    h?input [
-      "oninput" =!> fun d -> trigger (UpdateValue(pos, unbox d?target?value))
-      "onkeyup" =!> fun d -> if unbox d?keyCode = 13 then trigger FinishEdit
-      "value" => value ] []
+  td [ Class "selected"] [ 
+    input [
+      OnInput (fun e -> trigger (UpdateValue(pos, e.target?value)))
+      OnKeyUp (fun e -> if e.keyCode = 13. then trigger FinishEdit)
+      Value value ]
   ]
 
 let renderView trigger pos (value:option<_>) = 
-  h?td 
-    [ "style" => if value.IsNone then "background:#ffb0b0" else "background:white"; 
-      "onclick" =!> fun _ -> trigger(StartEdit(pos)) ] 
-    [ text (Option.defaultValue "#ERR" value) ]
+  td 
+    [ Style (if value.IsNone then [Background "#ffb0b0"] else [Background "white"])
+      OnClick (fun _ -> trigger(StartEdit(pos))) ] 
+    [ str (Option.defaultValue "#ERR" value) ]
 
 let renderCell trigger pos state =
   let value = Map.tryFind pos state.Cells |> Option.defaultValue ""
@@ -144,17 +148,17 @@ let renderCell trigger pos state =
     | _ -> 
         renderView trigger pos (Some "")
 
-let renderSheet trigger state =
-  h?table [] [
-    h?tr [] [
-      yield h?th [] []
+let view state trigger =
+  table [] [
+    tr [] [
+      yield th [] []
       for col in state.Cols ->
-        h?th [] [ text (string col) ]
+        th [] [ str (string col) ]
     ]
-    h?tbody [] [
+    tbody [] [
       for row in state.Rows ->
-        h?tr [] [
-          yield h?th [] [ text (string row) ]
+        tr [] [
+          yield th [] [ str (string row) ]
           for col in state.Cols -> renderCell trigger (col, row) state
         ]
     ]
@@ -164,10 +168,13 @@ let renderSheet trigger state =
 // ENTRY POINT
 // ----------------------------------------------------------------------------
 
-let initial = 
+let initial () = 
   { Cols = ['A' .. 'T']
     Rows = [1 .. 20]
     Active = None
-    Cells = Map.empty }
-
-app "main" initial renderSheet update
+    Cells = Map.empty },
+  Cmd.Empty    
+ 
+Program.mkProgram initial update view
+|> Program.withReact "main"
+|> Program.run

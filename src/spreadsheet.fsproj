@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,5 +9,10 @@
     <Compile Include="evaluator.fs" />
     <Compile Include="main.fs" />
   </ItemGroup>
-  <Import Project="..\.paket\Paket.Restore.targets" />
+  <ItemGroup>
+    <PackageReference Include="Fable.Core" Version="2.0.0" />
+    <PackageReference Include="Fable.React" Version="4.0.0-alpha-001" />
+    <PackageReference Include="Fable.Elmish.React" Version="1.0.3" />
+    <DotNetCliToolReference Include="dotnet-fable" Version="2.0.0" />
+  </ItemGroup>
 </Project>

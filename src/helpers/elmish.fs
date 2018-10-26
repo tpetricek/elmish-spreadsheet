@@ -1,5 +1,5 @@
-﻿module Elmish
-
+﻿module ElmishCrap
+(*
 open Fable.Core
 open Fable.Import
 open Fable.Import.Browser
@@ -110,3 +110,4 @@ let app id initial r u =
   handleEvent None
   event.Publish.Add(Some >> handleEvent)
 
+*)

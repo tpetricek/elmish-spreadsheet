@@ -5,6 +5,7 @@ open Elmish.React
 open Fable.Helpers.React
 open Fable.Helpers.React.Props
 open Fable.Core.JsInterop
+open Fable.Import
 
 open Evaluator
 
@@ -34,7 +35,7 @@ let update msg state =
 let renderEditor trigger pos value =
   td [ Class "selected"] [ 
     input [
-      OnInput (fun e -> trigger (UpdateValue(pos, e.target?value)))
+      OnInput (fun e -> Browser.window.alert(e.target?value))
       Value value ]
   ]
 

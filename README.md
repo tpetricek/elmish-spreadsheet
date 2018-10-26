@@ -22,79 +22,123 @@ use [VS Code](https://code.visualstudio.com/) with [Ionide](http://ionide.io/).
 Following the tutorial
 ----------------------
 
-### Step #1:  
+### Step #1: Keeping cell state
 
-// STEP #1: Rendering the grid
-// ---------------------------
-// Go to the `renderSheet` function. Currently, the function generates
-// a static HTML table. Change the function so that it generates the table
-// dynamically. There should be one column for every index in `state.Cols` 
-// and one row for every index in `state.Rows`. You can do this using 
-// `List.map`, or using F# list comprehensions (`for` loop and `yield`)
-// To get the <td> element with body for a given cell, call the `renderCell` 
-// function with the right position.
+We start with four cells and cell A1 is always selected, but you cannot actually
+edit the text in the cell! This is because we do not correctly store the state 
+of the textbox that the user edits.
 
+ 1. Open `main.fs` and go to `renderEditor`. You can see that we already have
+    an event handler for `OnInput` which shows a message using `window.alert`.
+    Change the code to trigger the `UpdateValue` event using the `trigger`
+    function (the first parameter of `UpdateValue` should be the position `pos`
+    and the second should be the value of the input, i.e. `e.target?value`).
 
-// STEP #2: Selecting a cell
-// -------------------------
-// The `renderCell` function currently renders an editor for cell A1 and
-// displays values as text for all other cells. Now, we want to be able to 
-// click on another cell to edit it. The events to do this are already 
-// defined and the code to trigger them is also in-place:
-//
-//  - In `renderEditor`, the `onkeyup` handler triggers `FinishEdit` 
-//    when the key code is [Enter]
-//  - In `renderView`, the `onclick` handler triggers `StartEdit`
-//
-// To support selection of cells, you first need to modify the `State` type 
-// and add a field that will represent the selected cell. This is optional,
-// because if you finish editing one cell, no other call is selected
-// (the `Position` type is a type alias for `char * int`). You need to:
-//
-//  1. Add `Active : option<Position>` to the `State` record
-//  2. Add an initial value to `initial`
-//  3. Handle `StartEdit` and `FinishEdit` in the `update` function
-//  4. Check if `state.Active` matches `pos` in `renderCell`
+ 2. Open `main.fs` and go to the `update` function. This needs to handle the 
+    `UpdateValue` event and calculate a new state. When we get an event 
+    `UpdateValue(pos, value)`, we need to create a new `state.Cells` map and
+    add a mapping from `post` to `value` (using `Map.add`)
 
+ 3. Finally, open `main.fs` and go to the `renderCell` function. Right now, this
+    passes `"!"` and `"?"` to the `renderEditor` and `renderView` functions. 
+    Find a value for the current cell using `Map.tryFind pos state.Cells`. You 
+    can handle `None` using `Option.defaultValue` (just make the default empty)
+    and pass it to `renderEditor` and `renderView`.
 
-// STEP #3: Evaluate equations!
-// ----------------------------
-// Currently, the `renderCell` just displays the text you enter in the editor.
-// Now, we want to evaluate basic expressions like `=1+2` and `=A10*3`. 
-// The parser for the expressions is already implemented in `evaluator.fs`,
-// so all you need to do is to implement and call the `evaluate` function!
-//
-// First, go to `renderCell`. In the case when we are rendering view (not 
-// the editor), you need to get the entered string from `state.Cells` and,
-// if it is Some, parse it using the `parse` function and then pass the
-// parsed expression to `evaluate` (these two functions are in `evaluator.fs`)
-//
-// Second, open `evaluator.fs`. The `evaluate` function is a recursive 
-// function, but currently it just returns 0, 1 or 2. Implement the 
-// evaluation function! (Don't worry about handling errors correctly, 
-// we'll fix that in the next step.)
+Now you should be able to edit the value in cell A1!
 
+### Step #2: Selecting a cell
 
-// STEP #4: Better error handling
-// ------------------------------
-// The evaluator can fail:
-//  1. If you reference a cell without a value
-//  2. If you reference a cell from within itself
-//
-// To handle errors, we need to modify the `evaluate` function so that
-// it returns `option<int>` rather than just `int`. Go to `evaluator.fs`
-// and modify the function! You will need to propagate the `None` values
-// correctly - the best way to do this is using `Option.bind` and 
-// `Option.map`, but you can also use pattern matching using `match`.
-//
-// Once you modify `evaluate` to return `option<int>`, you will need
-// to modify the code in `renderCell` below. For a start, you can just
-// display `#ERR`, but you can also modify `renderView` to indicate
-// errors with a different background color.
-//
-// Handling the second case is harder, because we currently just get into
-// an infinite loop and get a stack overflow. To handle this, you need
-// to modify the `evaluate` function so that it has an additional parameter
-// of type `Set<Position>` that keeps a set with all cells that we are 
-// evaluating. Then, when handling `Reference`, you need to make sure that
-// the referenced cell is not in this set.
+Now, we need to allow the user to select another cell. To do this, we will need
+to track the active cell in our state and add events for selecting another cell.
+
+ 1. Find the definition of `State` in `main.fs` and add a new field 
+    `Active` of type `Position option` (this keeps the selected cell position
+    or `None` if no cell is selected). In the `initial` function, return `None`.
+
+ 2. To change the selected cell, we need a new type of event. Find the `Event`
+    type (in `main.fs`) and add a new case `StartEdit` that carries a `Position`
+    value. 
+
+ 3. Modify `update` function in `main.fs` to handle the new `StartEdit` event.
+    When the event happens with `pos` as the new position to be selected, 
+    return a new state with `Active` set to `Some(pos)`.
+
+ 4. Finally, we need code that will trigger our new event. Find the `renderView`
+    function in `main.fs`. This creates a `<td>` element with the cell. In the
+    attributes of the element, add a handler for `OnClick` that triggers (using
+    the `trigger` function) the `StartEdit(pos)` event. (The code is similar to
+    `OnInput` that we already have in `renderEditor`.)   
+
+Now you can click on cells and change their values!
+
+### Step #3: Rendering the grid
+
+So far, we only had 4 cells. Those are created by hand in the `view` function.
+We want to change the code so that it generates cells dynamically, using the 
+cell and row keys in `state.Cols` and `state.Rows`.
+
+To do this, you can either use list comprehensions with `[ .. yield .. ]` syntax
+or you can use `List.map` function. The following steps describe how to use 
+`List.map`, which is easier if you are new to F# (but if you know F# already, 
+feel free to use list comprehensions!)
+
+ 1. You can generate headers using `List.map`. Use `state.Cols` as the input.
+    In the body of the map function, you can create a header using `header (string h)`.
+    You also need to append the empty cell using `empty::headers`.
+    
+ 2. The original `view` code defines two rows using `let cells1 = ...` and 
+    `let cells2 = ...`. First, modify the body to generate cell for each column
+    in `state.Cols` (just like for the headers). Next, modify the code to be a 
+    function that takes a row numbe `n`.
+
+ 3. Finally, use your new `cell` function to generate a row for every single 
+    row of the spreadsheet specified in `state.Rows`. If you are using `List.map`, 
+    the argument will need to generate a row using `tr [] (cells r)`.
+
+### Step #4: Evaluating equations
+
+Finally, we need to add an evaluator for spreadsheet formulas! The `parse` 
+function is already implemented (in `evaluator.fs`) so you need to add the 
+evaluator and put everything together.
+
+ 1. In `renderCell`, when we are handling a cell that is not selected, we
+    want to parse and evaluate the code and pass the result to `renderView`.
+    First, run `parse` on the cell value (when it is `Some value`) and then
+    format the result using `string`. This way, you should see what the 
+    result of parsing looks like.
+
+ 2. Next, modify the code to call `parse` and then `evaluate`. Since parsing
+    can fail, you'll need `Option.map` or pattern matching to do this. Also,
+    the `evalaute` function takes all cells too, so you need to call it using
+    `evaluate state.Cells parsed`.
+
+ 3. Finally, the code for `evaluate` in `evaluator.fs` just returns 0, 1 or 2.
+    Modify this to actually evaluate the expression! For `Number`, just return 
+    the number; for `Binary`, recursively evaluate `l` and `r` and then apply
+    the binary operator; for `Reference`, you will need to find the value in 
+    `cells`, parse it and evaluate that recursively. Do not worry about correct
+    error handling. We'll fix that next!
+
+### Step #5: Add proper error handling
+
+The evaluator can fail when you reference a cell without a value (it will crash)
+or when you reference a cell within itself (it will run into an infinite loop),
+so let's fix that!
+ 
+ 1. Modify the `evaluate` function in `evaluator.fs` so that it returns `option<int>` 
+    rather than just `int`. You will need to return `Some` in the `Number` case
+    and propagate the `None` values correctly - the easiest way to do this is using
+    `Option.bind` and `Option.map`, but you can also use pattern matching using 
+    `match`.
+
+ 2. Once you modify `evaluate`, you also need to modify `renderCell` in `main.fs`
+    so that it calls it correctly. If you pass `None` to `renderView`, it
+    will display `#ERR` in red just like Excel.
+
+ 3. Handling recursive references is harder. We currently just get into
+    an infinite loop and get a stack overflow. To handle this, you need
+    to modify the `evaluate` function so that it has an additional parameter
+    of type `Set<Position>` that keeps a set with all cells that we are 
+    evaluating. Then, when handling `Reference`, you need to make sure that
+    the referenced cell is not in this set.

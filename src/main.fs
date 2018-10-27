@@ -35,6 +35,7 @@ let update msg state =
 let renderEditor (trigger:Event -> unit) pos value =
   td [ Class "selected"] [ 
     input [
+      AutoFocus true
       OnInput (fun e -> Browser.window.alert(e.target?value))
       Value value ]
   ]

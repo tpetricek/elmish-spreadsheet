@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start":"cd src & dotnet fable webpack-dev-server",
+    "start":"cd src && dotnet fable webpack-dev-server",
     "postinstall": "dotnet restore src"
   },
   "private": true,

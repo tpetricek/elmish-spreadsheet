@@ -64,7 +64,12 @@ to track the active cell in our state and add events for selecting another cell.
     When the event happens with `pos` as the new position to be selected, 
     return a new state with `Active` set to `Some(pos)`.
 
- 4. Finally, we need code that will trigger our new event. Find the `renderView`
+ 4. Go to `renderCell` and modify the condition `pos = ('A', 1)`. Rather than
+    checking that we are rendering cell A1, we need to check whether we are
+    rendering the cell specified in `state.Active` (note that this is an option
+    type so you need to compare against `Some(pos)` or use `Option.contains`).
+    
+ 5. Finally, we need code that will trigger our new event. Find the `renderView`
     function in `main.fs`. This creates a `<td>` element with the cell. In the
     attributes of the element, add a handler for `OnClick` that triggers (using
     the `trigger` function) the `StartEdit(pos)` event. (The code is similar to

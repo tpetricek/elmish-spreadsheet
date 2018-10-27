@@ -32,7 +32,7 @@ let update msg state =
 // RENDERING
 // ----------------------------------------------------------------------------
 
-let renderEditor trigger pos value =
+let renderEditor (trigger:Event -> unit) pos value =
   td [ Class "selected"] [ 
     input [
       OnInput (fun e -> Browser.window.alert(e.target?value))

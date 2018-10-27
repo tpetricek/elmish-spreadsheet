@@ -37,7 +37,7 @@ of the textbox that the user edits.
  2. Open `main.fs` and go to the `update` function. This needs to handle the 
     `UpdateValue` event and calculate a new state. When we get an event 
     `UpdateValue(pos, value)`, we need to create a new `state.Cells` map and
-    add a mapping from `post` to `value` (using `Map.add`)
+    add a mapping from `pos` to `value` (using `Map.add`)
 
  3. Finally, open `main.fs` and go to the `renderCell` function. Right now, this
     passes `"!"` and `"?"` to the `renderEditor` and `renderView` functions. 

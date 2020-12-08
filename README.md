@@ -10,8 +10,32 @@ running as a client-side web application.
 Getting started
 ---------------
 
-To run the tutorial, you will need to install Fable pre-requirements and
-get an F# editor that works well with Fable. The recommended setup is to 
+Here is one way to run the tutorial.
+Given `elmish-spreadsheet`, a clone of this repo:
+```
+cd elmish-spreadsheet
+mkdir run ; cd run
+dotnet new fable-react-elmish
+cp -Rp ../src/{main.fs,evaluator.fs,helpers} src
+```
+- In `run/src/App.fsproj`, replace the `Compile` lines with these from `run/../src/spreadsheet.fsproj`:
+```
+    <Compile Include="helpers/elmish.fs" />
+    <Compile Include="helpers/parsec.fs" />
+    <Compile Include="evaluator.fs" />
+    <Compile Include="main.fs" />
+```
+- Open a web browser to `http://localhost:8080`
+- Then, in the `run` dir, do this:
+```
+cd src
+dotnet build
+cd ..
+npm start
+```
+**Note: These instructions currently produce a blank browser page. We are investigating.**
+
+You will need to use an F# editor that works well with Fable. The recommended setup is to 
 use [VS Code](https://code.visualstudio.com/) with [Ionide](http://ionide.io/).
 
 * [dotnet SDK](https://www.microsoft.com/net/download/core) 2.0 or higher

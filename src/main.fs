@@ -2,8 +2,8 @@ module Spreadsheet
 
 open Elmish
 open Elmish.React
-open Fable.Helpers.React
-open Fable.Helpers.React.Props
+open Fable.React
+open Fable.React.Props
 open Fable.Core.JsInterop
 open Fable.Import
 
@@ -36,7 +36,7 @@ let renderEditor (trigger:Event -> unit) pos value =
   td [ Class "selected"] [ 
     input [
       AutoFocus true
-      OnInput (fun e -> Browser.window.alert(e.target?value))
+      OnInput (fun e -> Browser.Dom.window.alert(e.target?value))
       Value value ]
   ]
 
@@ -84,5 +84,5 @@ let initial () =
   Cmd.Empty    
  
 Program.mkProgram initial update view
-|> Program.withReact "main"
+|> Program.withReactBatched "main"
 |> Program.run
